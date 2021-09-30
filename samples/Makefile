@@ -13,3 +13,6 @@ sample2: sample2.c
 checked1: checked1.c
 	$(CC) checked1.c -o c1
 
+clean:
+	rm s1 s2 c1 c2
+

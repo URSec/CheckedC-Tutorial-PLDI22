@@ -1,6 +1,9 @@
 # C Binaries
 s1
 s2
+c1
+c2
 
 *.core
+vgcore.*
 
