@@ -4,7 +4,9 @@
 
 #pragma CHECKED_SCOPE push
 
-_Itype_for_any(T) void* malloc(size_t len) : _Array_ptr<T> byte_count(len);
+_Itype_for_any(T) void* malloc(size_t len) : itype(_Array_ptr<T>) byte_count(len);
+
+_Itype_for_any(T) void free(void* ptr : itype(_Ptr<T>));
 
 struct LinkedList {
     _Ptr<struct LinkedList> next;
@@ -24,13 +26,13 @@ int main() {
     }
 
     ptr = head;
-    for (i = 0; i < 5; ++i) {
+    for (i = 0; i < 6; ++i) {
         fptr = ptr;
         ptr = ptr->next;
-        free(fptr);
+        free<struct LinkedList>(fptr);
         printf("Address: %p, Value: %ld\n", ptr, ptr->val);
     }
-    free(ptr);
+    free<struct LinkedList>(ptr);
 
     return 0;
 }
