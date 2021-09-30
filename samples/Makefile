@@ -1,4 +1,4 @@
-CC := /usr/bin/clang
+CC := /home/checked/clang-0.8/build/bin/clang
 
 all: sample1 sample2
 

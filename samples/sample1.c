@@ -7,18 +7,18 @@ struct LinkedList {
 };
 
 int main() {
-    struct LinkedList head;
-    struct LinkedList *ptr, *fptr;
+    struct LinkedList *head, *ptr, *fptr;
     int i;
+    head = malloc(sizeof(struct LinkedList));
 
-    ptr = &head;
+    ptr = head;
     for (i = 0; i < 5; ++i) {
         ptr->next = malloc(sizeof(struct LinkedList));
         ptr = ptr->next;
         ptr->val = i;
     }
 
-    ptr = &head;
+    ptr = head;
     for (i = 0; i < 5; ++i) {
         fptr = ptr;
         ptr = ptr->next;
