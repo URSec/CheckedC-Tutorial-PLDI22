@@ -19,7 +19,6 @@ struct LinkedList {
 int main() {
     struct LinkedList *head, *ptr, *fptr;
     int i;
-    long val;
     head = malloc(sizeof(struct LinkedList));
 
     ptr = head;
@@ -34,9 +33,8 @@ int main() {
         fptr = ptr;
         ptr = ptr->next;
         free(fptr);
-        val = ptr->val;
 
-        printf("Address: %p, Value: %ld\n", ptr, val);
+        printf("Address: %p, Value: %ld\n", ptr, ptr->val);
     }
     free(ptr);
 

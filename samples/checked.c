@@ -14,7 +14,6 @@ struct LinkedList {
 int main() {
     _Ptr<struct LinkedList> head = NULL, ptr = NULL, fptr = NULL;
     int i;
-    long val;
     head = malloc<struct LinkedList>(sizeof(struct LinkedList));
 
     ptr = head;
@@ -29,10 +28,9 @@ int main() {
         fptr = ptr;
         ptr = ptr->next;
         free<struct LinkedList>(fptr);
-        val = ptr->val;
         
         _Unchecked {
-          printf("Address: %p, Value: %ld\n", ptr, val);
+          printf("Address: %p, Value: %ld\n", ptr, ptr->val);
         }
     }
     free<struct LinkedList>(ptr);
