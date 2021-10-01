@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include <stddef.h>
 
-#pragma CHECKED_SCOPE push
-
 _Itype_for_any(T) void* malloc(size_t len) : itype(_Array_ptr<T>) byte_count(len);
 
 _Itype_for_any(T) void free(void* ptr : itype(_Ptr<T>));
@@ -16,6 +14,7 @@ struct LinkedList {
 int main() {
     _Ptr<struct LinkedList> head = NULL, ptr = NULL, fptr = NULL;
     int i;
+    long val;
     head = malloc<struct LinkedList>(sizeof(struct LinkedList));
 
     ptr = head;
@@ -30,11 +29,14 @@ int main() {
         fptr = ptr;
         ptr = ptr->next;
         free<struct LinkedList>(fptr);
-        printf("Address: %p, Value: %ld\n", ptr, ptr->val);
+        val = ptr->val;
+        
+        _Unchecked {
+          printf("Address: %p, Value: %ld\n", ptr, val);
+        }
     }
     free<struct LinkedList>(ptr);
 
     return 0;
 }
 
-#pragma CHECKED_SCOPE pop
