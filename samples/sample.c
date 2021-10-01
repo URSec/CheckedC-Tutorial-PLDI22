@@ -1,5 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stddef.h>
+
+/*
+ * This is the provided bounds-safe interface definition for malloc() and * free().
+
+_Itype_for_any(T) void* malloc(size_t len) : itype(_Array_ptr<T>) byte_count(len);
+
+_Itype_for_any(T) void free(void* ptr : itype(_Ptr<T>));
+
+*/
 
 struct LinkedList {
     struct LinkedList *next;
@@ -9,6 +19,7 @@ struct LinkedList {
 int main() {
     struct LinkedList *head, *ptr, *fptr;
     int i;
+    long val;
     head = malloc(sizeof(struct LinkedList));
 
     ptr = head;
@@ -23,7 +34,9 @@ int main() {
         fptr = ptr;
         ptr = ptr->next;
         free(fptr);
-        printf("Address: %p, Value: %ld\n", ptr, ptr->val);
+        val = ptr->val;
+
+        printf("Address: %p, Value: %ld\n", ptr, val);
     }
     free(ptr);
 
