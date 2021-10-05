@@ -1,1 +1,1 @@
-https://hub.docker.com/repository/docker/2000jedi/checkedc
+https://hub.docker.com/r/2000jedi/checkedc
