@@ -1,0 +1,6 @@
+version: '3.8'
+services:
+  tutorial:
+    image: "2000jedi/checkedc"
+    volumes:
+    - .:/tutorial

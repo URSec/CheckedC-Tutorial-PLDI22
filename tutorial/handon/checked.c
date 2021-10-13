@@ -2,9 +2,11 @@
 #include <stdlib.h>
 #include <stddef.h>
 
+#if 0
 _Itype_for_any(T) void* malloc(size_t len) : itype(_Array_ptr<T>) byte_count(len);
 
 _Itype_for_any(T) void free(void* ptr : itype(_Ptr<T>));
+#endif
 
 struct LinkedList {
     _Ptr<struct LinkedList> next;

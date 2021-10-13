@@ -1,5 +1,3 @@
-CC := /home/checked/clang-0.8/build/bin/clang
-
 all: sample checked
 
 sample: sample.c
