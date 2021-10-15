@@ -1,0 +1,9 @@
+diff --git a/convert_all.sh b/convert_all.sh
+index 212d28e..d89c116 100755
+--- a/convert_all.sh
++++ b/convert_all.sh
+@@ -1 +1 @@
+-3c -alltypes -warn-root-cause -output-dir=out ./to_ppm.c -- -I ./include
+\ No newline at end of file
++3c -alltypes -warn-root-cause -output-dir=out ./to_ppm.c  -infer-types-for-undefs -- -I ./include
+\ No newline at end of file

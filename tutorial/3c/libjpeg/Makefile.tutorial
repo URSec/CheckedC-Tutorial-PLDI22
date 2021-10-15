@@ -1,0 +1,43 @@
+.PHONY: test update_tutorial
+
+test: tutorial.sh
+	./tutorial.sh
+
+# Use this directive on the `main` branch to generate a series of commits for
+# the changes described by the tutorial text. It uses the
+# `update-tutorial-commit-links` found in https://github.com/correctcomputation/utils-5c
+# to automatically update commits references in the text of the tutorial.
+update_tutorial: tutorial.sh
+	bash -c "sed -i 's/START_COMMIT/$$(git rev-parse HEAD)/' README.md"
+	git checkout --detach
+	git add README.md
+	git commit -m 'Set initial commit'
+	./tutorial.sh
+	update-tutorial-commit-links
+	git add README.md
+	git commit -m 'Update tutorial links'
+
+# Building the tutorial script requires `pandoc` and `pandoc-tangle` which can
+# be obtained with:
+# * sudo apt install pandoc
+# * pip install entangled-filters
+# More details on these tools can be found in https://github.com/correctcomputation/vsftpd_tutorial
+tutorial.sh: README.md
+	pandoc -t plain -f markdown-raw_html --filter pandoc-tangle $<
+	sed -i '$ s/display/identify -/' $@
+	chmod +x $@
+
+# This is a bit of a funny work around. Pandoc doesn't treat inline `<a>` html
+# elements (which are required by update-tutorial-commit-links) as links when
+# converting markdown to docx. When converting markdown to html, they are
+# passed through unaltered to the output html. If pandoc then reads that html,
+# it will treat the `<a>` as a link, and output a link in the docx file.
+README.docx: README.html
+	pandoc -t docx -o $@ $<
+
+.INTERMEDIATE: README.html
+README.html: README.md
+	pandoc --metadata title="Libjpeg Tutorial" -s -t html -o $@ $<
+
+clean:
+	rm -f tutorial.sh README.docx
