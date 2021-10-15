@@ -1,9 +1,3 @@
-
-#
-# TODO: Set CC to the 3C clang.
-#
-CC := $(LLVM_DIR)/bin/clang
-
 CFLAGS := -O3 -Wno-nullability-completeness
 
 SRC := sum2array.c
