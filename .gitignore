@@ -7,3 +7,4 @@ c2
 *.core
 vgcore.*
 
+**/.vscode
