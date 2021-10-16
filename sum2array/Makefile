@@ -9,7 +9,7 @@ sum2array: $(SRC)
 	$(CC) $(CFLAGS) $^ -o $@
 
 checked: $(SRC_CHECKED)
-	$(CC) $(CFLAGS) $^ -o $@
+	$(CC) $(CFLAGS) $^ -o sum2array_checked
 
 clean:
-	rm -f sum2array *.o *.s *.ll
+	rm -f sum2array sum2array_checked *.o *.s *.ll
