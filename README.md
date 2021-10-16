@@ -34,12 +34,17 @@ The Checked C compiler is located at `/checkedc/bin/clang-12`, the environment v
 The folder `/tutorial` maps to the local git repository, so any changes to this folder will be reflected to `/tutorial` in the docker container.
 The container has `vim` pre-installed. You can also directly modify files from your host system.
 
-## Folder Structure
+## Directory Structure
 
-- /tutorial/
-    - 3c/
-        - libjpeg/
-        - tiny-bignum-c/
-    - linkedlist/
-    - sum2array/
-    - tiny-bignum/
+```shell
+tutorial                    # root directory for the whole project
+|-- 3c                      # examples for 3c
+|   |-- libjpeg             # libjpeg library
+|   |-- tiny-bignum-c       # tiny-bignum-c library
+|-- linkedlist              # simple example that demonstrates a linkedlist
+|-- sum2array               # simple example that adds up two arrays
+|-- tiny-bignum             # tiny-bignum-c library
+|-- docker-compose.yaml     # docker setup file
+|-- run.sh                  # launch shell from MacOS and Linux
+|-- run.bat                 # Launch shell from Windows
+```
