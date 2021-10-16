@@ -2,7 +2,7 @@
 
 ## Setup and Installation
 
-Download Docker at [https://www.docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop).
+Download and Install Docker from [https://docs.docker.com/engine/install/](https://docs.docker.com/engine/install/).
 
 Command to prepare the docker container:
 
