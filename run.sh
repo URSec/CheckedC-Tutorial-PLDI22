@@ -56,11 +56,6 @@ install() {
             sudo chmod +x /usr/local/bin/docker-compose
             exit
         fi
-    elif [[ `uname` == "Darwin" ]]; then
-        # TODO: MacOS
-    else
-        echo "Unknown OS"
-        exit
     fi
 }
 
