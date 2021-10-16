@@ -1,16 +1,31 @@
 # A Tutorial on Checked C
 
-## Setup and Installation
+Please `git clone` this repo to you OS. It contains the script to install and
+run our docker image, and also the sample code used to in this tutorial.
 
-Download and Install Docker from [https://docs.docker.com/engine/install/](https://docs.docker.com/engine/install/).
+##  Install Docker and Docker Compose
 
-You will need to clone this repository locally:
+### For all OS
+Download and install Docker from [https://docs.docker.com/engine/install/](https://docs.docker.com/engine/install/).
 
-> git clone https://github.com/URSec/CheckedC-Tutorial-SecDev21.git
+### For Debian-based Linux
+If you're using a Debian-based Linux such as Ubuntu, you can use our script
+to download and install docker:
 
-Command to setup the docker container and to use the terminal from within the container:
+```shell
+sudo ./run.sh install
+```
 
-> docker-compose run tutorial bash
+## Launch and enter the docker image from a terminal
+After `docker` and `docker-compose` are installed, you can launch the docker
+image by running:
+
+```shell
+./run.sh
+```
+
+For Windows Users, double click `run.bat` to launch the shell.
+
 
 ## Using the Container
 

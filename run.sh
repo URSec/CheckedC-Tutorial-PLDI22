@@ -46,14 +46,16 @@ init() {
 # Install docker and docker-compose
 #
 install() {
-    if [[ ! `which docker` ]]; then
-        $DOCKER_INSTALL_CMD
-    fi
+    if [[ `uname` == "Linux" ]]; then
+        if [[ ! `which docker` ]]; then
+            $DOCKER_INSTALL_CMD
+        fi
 
-    if [[ ! `which docker-compose` ]]; then
-        sudo $DOCKER_COMPOSE_INSTALL_CMD
-        sudo chmod +x /usr/local/bin/docker-compose
-        exit
+        if [[ ! `which docker-compose` ]]; then
+            sudo $DOCKER_COMPOSE_INSTALL_CMD
+            sudo chmod +x /usr/local/bin/docker-compose
+            exit
+        fi
     fi
 }
 
