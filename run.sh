@@ -60,9 +60,22 @@ install() {
 }
 
 #
+# Remove the docker image
+#
+clean() {
+    docker stop $(docker ps | grep checkedc | cut -d ' ' -f1)
+    docker image rm -f $(docker images | grep "checkedc" | tr -s ' ' | cut -d' ' -f3)
+    exit
+}
+
+#
 # Entrance of this script
 #
-init $1
+if [[ $1 == "install" ]]; then
+    init $1
+elif [[ $1 == "clean" ]]; then
+    clean
+fi
 
 #
 # Launch the tutorial image.
