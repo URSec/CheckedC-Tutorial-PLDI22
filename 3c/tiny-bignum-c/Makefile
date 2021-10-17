@@ -1,5 +1,5 @@
-CC     := gcc
-MACROS := 
+CC     := /checkedc/bin/clang-12
+MACROS :=
 CFLAGS := -I. -Wundef -Wall -Wextra -O3 $(MACROS)
 
 
@@ -21,14 +21,14 @@ test:
 	@echo ================================================================================
 	@./build/test_load_cmp
 	@echo ================================================================================
-	@python ./scripts/fact100.py
+	@python2 ./scripts/fact100.py
 	@./build/test_factorial
 	@echo ================================================================================
-	@python ./scripts/test_old_errors.py
+	@python2 ./scripts/test_old_errors.py
 	@echo ================================================================================
 	@#./build/test_rsa
 	@#echo ================================================================================
-	@python ./scripts/test_rand.py 1000
+	@python2 ./scripts/test_rand.py 1000
 	@echo ================================================================================
 	@echo
 

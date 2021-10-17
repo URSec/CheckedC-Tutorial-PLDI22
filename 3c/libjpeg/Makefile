@@ -1,4 +1,4 @@
-CC=clang
+CC=/checkedc/bin/clang-12
 CFLAGS=-I./include
 to_ppm: to_ppm.c
 	$(CC) $(CFLAGS) -o $@ $< -ljpeg
