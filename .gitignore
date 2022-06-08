@@ -3,8 +3,11 @@ s1
 s2
 c1
 c2
+tiny-bignum/build/*
+sum2array/sum2array*
 
 *.core
 vgcore.*
 
 **/.vscode
+
