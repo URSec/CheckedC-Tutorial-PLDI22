@@ -40,6 +40,7 @@ init() {
 
         exit
     fi
+
 }
 
 #
@@ -75,6 +76,21 @@ if [[ $1 == "install" ]]; then
     init $1
 elif [[ $1 == "clean" ]]; then
     clean
+fi
+
+#
+# Check if the Docker daemon is running
+#
+if [[ `uname` == "Linux" ]]; then
+    if [[ ! `pgrep dockerd` ]]; then
+        echo "Please first start the docker daemon: \"sudo service docker start\""
+        exit
+    fi
+elif [[ `uname` == "Darwin" ]]; then
+    if [[ ! `pgrep Docker` ]]; then
+        echo "Please first start the Docker app."
+        exit
+    fi
 fi
 
 #
