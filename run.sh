@@ -2,7 +2,7 @@
 
 #
 # This script (first downloads if not existed and) launches the docker image
-# for this tutoria.
+# on Linux/MacOS for this tutorial.
 #
 
 DOCKER_INSTALL_CMD="sudo apt-get install docker-ce docker-ce-cli containerd.io"

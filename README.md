@@ -17,13 +17,16 @@ sudo ./run.sh install
 ```
 
 ## Launch and enter the docker image from a terminal
-After `docker` and `docker-compose` are installed, you can launch the docker
-image by running:
+After `docker` and `docker-compose` are installed, you can launch a docker
+container by running the `run` script. The script will automatically download
+the docker image the first time you run it, and launches a container.
 
+### Linux/MacOS
 ```shell
 ./run.sh
 ```
 
+### Windows
 For Windows Users, double click `run.bat` to launch the shell.
 
 
