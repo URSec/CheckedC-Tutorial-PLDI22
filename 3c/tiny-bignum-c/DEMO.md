@@ -1,9 +1,11 @@
 # Converting tiny-bignum-c
 
-This is a slightly amended version of the demo available [here](https://github.com/correctcomputation/checkedc-tiny-bignum-c).
+This is a slightly amended version of the demo available [here](https://github.com/secure-sw-dev/checkedc-tiny-bignum-c).
+
+# Converting tiny-bignum-c
 
 ## Purpose
-This repository serves as a workflow demonstration of [3C](https://github.com/correctcomputation/checkedc-clang), a tool that automatically converts C code to [Checked C](https://github.com/Microsoft/checkedc-clang/wiki) code.
+This repository serves as a workflow demonstration of [3C](https://github.com/secure-sw-dev/checkedc-clang), a tool that automatically converts C code to [Checked C](https://github.com/secure-sw-dev/checkedc-clang/wiki) code.
 
 ### Checked C
 
@@ -26,15 +28,15 @@ This demo therefore takes place over a number of commits, each of which represen
 
 ## Install
 
-You will need to [install 3C](https://github.com/correctcomputation/checkedc-clang/blob/main/clang/docs/checkedc/3C/INSTALL.md) and Checked C's `clang` compiler before beginning. Since 3C's repository also includes the `clang` compiler, you can build both when installing 3C. Follow the instructions linked above and also build TARGET `clang` (along with target `3c`). 
+You will need to [install 3C](https://github.com/secure-sw-dev/checkedc-clang/blob/main/clang/docs/checkedc/3C/INSTALL.md) and Checked C's `clang` compiler before beginning. Since 3C's repository also includes the `clang` compiler, you can build both when installing 3C. Follow the instructions linked above and also build TARGET `clang` (along with target `3c`). 
 
 Make sure to clone the `checkedc` project into the `checkedc-wrapper` directory as in the instructions. There are important header files that 3C needs. Note the location of the `build/bin` directory, which might change if you use an IDE. Add the build directory to your `PATH` so that both `3c` and `clang` are available.
 
-The demo uses the version of 3C and Checked C's `clang` current as of August 26, 2021 ([this commit](https://github.com/correctcomputation/checkedc-clang/commit/d7b9b2de54257682c03db5c4023443ab0f5f08cb) for 3C and clang, and [this commit](https://github.com/microsoft/checkedc/commit/5b51b0fc788fd94ffd1c9de71b1643def4724e6f) for the Checked C headers, needed when building them both).
+The demo uses the version of 3C and Checked C's `clang` current as of January 28, 2022 ([this commit](https://github.com/secure-sw-dev/checkedc-llvm-project/commit/107dee359fa7b332fef3d8f2d538c2ee9a8a3281) for 3C and clang, and [this commit](https://github.com/secure-sw-dev/checkedc/commit/19247d67f8c249eb1105c3ef05b49340e91458e8) for the Checked C headers, needed when building them both).
 
 ## Getting the Repo Ready for the Demo
 
-We start from a fork of the [tiny-bignum-c project](https://github.com/kokke/tiny-bignum-c). This is a small library with multiple test programs. The rest of this README describes the changes we made. It references commit hashes for the online version of the demo; you can ignore these; we are starting at <a href="https://github.com/correctcomputation/checkedc-tiny-bignum-c/commit/e1e7d95d1373b119ca0351a4526c76de8159388f" data-commit-subject="setup">this commit</a>. It's the same as the one above, but we have added a script `convert_all.sh` to the root directory and improved the makefile and `.gitignore` file. 
+We start from a fork of the [tiny-bignum-c project](https://github.com/kokke/tiny-bignum-c). This is a small library with multiple test programs. The rest of this README describes the changes we made starting at <a href="https://github.com/secure-sw-dev/checkedc-tiny-bignum-c/commit/1d7a1f9b8e77316187a6b3eae8e68d60a6f9a4d4" data-commit-start="true">this commit</a> (the root of the fork). If you want to go through the tutorial yourself, we recommend cloning this repo and then going to <a href="https://github.com/secure-sw-dev/checkedc-tiny-bignum-c/commit/e1e7d95d1373b119ca0351a4526c76de8159388f" data-commit-subject="setup">this commit</a>. It's the same as the one above, but we have added a script `convert_all.sh` to the root directory and improved the makefile and `.gitignore` file. Save this README, though, as it was added to the repo after the work it describes.
 
 ## Initial Conversion
 
@@ -63,54 +65,13 @@ This is a single command that executes `3c` on `bn.c`, the main library file, an
 
 After running this command, we will see modified versions of the library files in the `out` directory. We can run `cp -r out/* .` to move the checked versions over-top of the originals. Now, if we like, we can see the effect of the conversion by doing `git diff`. If we wanted to recover overwritten files we could use `git reset`. 
 
-We <a href="https://github.com/correctcomputation/checkedc-tiny-bignum-c/commit/6a9b86640853b7a94c3b3a917917a586b201635c" data-commit-subject="First run of 3c">commit these changes</a> with comment "First run of 3c". 
-
-## Fixing `bignum_to_string` buffer lengths
-
-A lot of changes were made by this conversion command. Having copied the changed files over-top their originals, we can see these changes with the command `git diff`. Most of the diffs involve `struct bn*` being changed to `_Ptr<struct bn>`. Arrays have the `_Checked` or `_Nt_checked` keyword added to ensure runtime bounds checks, and all checked pointers are initialized.
-
-Now we can try to compile the code using Checked C's `clang` by typing `make -k CC=clang` (recall that we are assuming that Checked C's `clang` is in your `PATH`). Unfortunately, the code does not compile; we see a bunch of errors like this in different files:
-
-```
-./tests/golden.c:260:29: error: argument does not meet declared bounds for 2nd parameter
-      bignum_to_string(&sa, buf, sizeof(buf));
-                            ^~~
-./tests/golden.c:260:29: note: destination bounds are wider than the source bounds
-./tests/golden.c:260:29: note: destination upper bound is above source upper bound
-./tests/golden.c:260:29: note: (expanded) expected argument bounds are 'bounds((char *)buf, (char *)buf + (int)sizeof (buf))'
-./tests/golden.c:260:29: note: (expanded) inferred bounds are 'bounds(buf, buf + 8191)'
-      bignum_to_string(&sa, buf, sizeof(buf));
-                            ^~~
-```
-
-The issue arises from the call to `bignum_to_string`. If we look at `bn.h` and `bn.c`, we will notice that nearly every pointer is a fully checked pointer, but the type of `str` in this function prototype is an exception:
-
-```c
-void bignum_to_string(_Ptr<struct bn> n, char *str : itype(_Array_ptr<char>) count(maxsize), int maxsize);
-```
-
-It has an *interop type* `char *str : itype(_Array_ptr<char>) ...`. To a first approximation, this means that other code can treat `str` as either an unchecked `char *` or a checked `_Array_ptr<char>` without an explicit cast. Interop types (often abbreviated "itypes") provide valuable flexibility in the middle of porting: we gain the ability to treat `str` as an `_Array_ptr<char>` without having to immediately add casts to all code that treats it as a `char *`. Here, `str` is used unsafely in the body of `bignum_to_string`, so 3C automatically assigned it an itype so the body of `bignum_to_string` will continue to compile but 3C can go ahead and start updating calls to `bignum_to_string` to pass checked pointers. In this way, 3C localizes unsafe behavior in order to convert as much of the code as possible in each pass.
-
-We'll see later why 3C believes `str` is used unsafely inside `bignum_to_string`. For now, let's figure out why the calls to `bignum_to_string` are producing errors. 3C has guessed that `str` has the bound `count(maxsize)` because at the call sites, the `maxsize` argument is in fact equal to the size of the buffer passed for `str`. For example, `tests/golden.c` contains the following code:
-
-```c
-char buf _Nt_checked[8192];
-// ...
-bignum_to_string(&sa, buf, sizeof(buf));
-printf("    a = %s \n", buf);
-```
-
-However, 3C's guess did not take into account that at the call site, `buf` has been inferred to be a _null-terminated_ array (`_Nt_checked`), which follows special rules in Checked C. (`buf` has to be null-terminated because it is passed to `printf`, which requires a null-terminated string.) In Checked C, an `_Nt_array_ptr : count(n)` points to an array of at least `n` elements _not counting_ the null terminator. This makes it safe to convert an `_Nt_array_ptr : count(n)` to an `_Array_ptr : count(n)`, because the `_Array_ptr` cannot be used to overwrite the null terminator. (If the `_Nt_array_ptr` count included the null terminator, then conversion to an `_Array_ptr` would have to subtract 1 from the count, which would be ugly.) However, this means that when an `_Nt_checked` array is declared, Checked C automatically reserves the last element for the null terminator, and the corresponding `_Nt_array_ptr` count is one less than the original array size. In our example, `buf` becomes an `_Nt_array_ptr<char> : count(8191)`. This is not convertible to the `_Array_ptr<char> : count(8192)` that we get when we instantiate the declared type of the `str` parameter with the specified `maxsize = sizeof(buf) = 8192`, hence the compile error.
-
-To find the correct way to fix the error, first we need to confirm what the API of `bignum_to_string` actually is: does the `maxsize` parameter include the null terminator or not? Either design is valid as long as it is used consistently. Clearly, the call sites assume that `maxsize` includes the null terminator. If this were the API, we would just change the declaration of `str` to say `count(maxsize-1)`, and the errors at the call sites would go away. But examination of the implementation of `bignum_to_string` suggests that it assumes that `maxsize` (a.k.a. `nbytes`) _excludes_ the null terminator: `bignum_to_string` asserts that `nbytes` is even on the grounds that converting a whole number of bytes to hexadecimal should produce an even number of characters, which only makes sense if `nbytes` is the number of characters excluding the null terminator. So **Checked C porting has called our attention to an inconsistency in the original C code that presents a potential spatial memory safety violation.** If the caller passes an 8192-byte buffer (8191 bytes plus a null terminator) but `bignum_to_string` thinks the buffer has space for 8192 bytes plus a null terminator, `bignum_to_string` might write the null terminator out of bounds or might just write 8192 non-null bytes, causing the subsequent `printf` to read out of bounds.
-
-To resolve the API inconsistency, we can either change the call sites so that `maxsize` excludes the null terminator or change the implementation so that `maxsize` includes it. Again, either approach would lead to a working program; in general, the decision may depend on the difficulty of updating the call sites as compared to the implementation. In this case, a quick look at both the implementation and callers of `bignum_from_string` indicates that its `nbytes` parameter excludes the null terminator, so we decide to make `bignum_to_string` consistent with `bignum_from_string` by changing the call sites so that `maxsize` excludes the null terminator. This is a matter of replacing `sizeof(buf)` with `sizeof(buf)-1` (or whatever the variable is named) at all the call sites. But since `bignum_to_string` requires `maxsize` to be even, we also have to add 1 to the size of `buf` so that `sizeof(buf)-1` will be even.
-
-We <a href="https://github.com/correctcomputation/checkedc-tiny-bignum-c/commit/ddc132d587c7943ec7d112d17573d8f19fd9a04c" data-commit-subject="fix bignum_to_string buffer lengths">commit these changes</a> with the message "manual commit: fix bignum_to_string buffer lengths".
+We <a href="https://github.com/secure-sw-dev/checkedc-tiny-bignum-c/commit/4a5569ad90775ac7a345b938dde97fd729389808" data-commit-subject="First run of 3c">commit these changes</a> with comment "First run of 3c". 
 
 ## Fixing the unsafe use of `bignum_from_string`'s `str`
 
-With these fixes in place, we can try to compile the program again. We still see a problem:
+A lot of changes were made by this conversion command. Having copied the changed files over-top their originals, we can see these changes with the command `git diff`. Most of the diffs involve `struct bn*` being changed to `_Ptr<struct bn>`. Arrays have the `_Checked` or `_Nt_checked` keyword added to ensure runtime bounds checks, and all checked pointers are initialized.
+
+Now we can try to compile the code using Checked C's `clang` by typing `make -k CC=clang` (recall that we are assuming that Checked C's `clang` is in your `PATH`). Unfortunately, the code does not compile; we see errors like this for code in `bignum_from_string`:
 
 ```
 bn.c:117:12: error: it is not possible to prove argument meets declared bounds for 1st parameter
@@ -124,16 +85,16 @@ bn.c:117:12: note: (expanded) inferred bounds are 'bounds(str, str + 0)'
            ^~~~~~~
 ```
 
-The Checked C compiler comes with its own Checked C declarations of the most common C library functions. If we look at the type of `sscanf` in the header [`stdio_checked.h`](https://github.com/microsoft/checkedc/blob/master/include/stdio_checked.h#L106), we see that the input buffer of `sscanf` has an itype:
+The Checked C compiler comes with its own Checked C declarations of the most common C library functions. If we look at the type of `sscanf` in the header [`stdio_checked.h`](https://github.com/microsoft/checkedc/blob/master/include/stdio_checked.h#L106), we see that the input buffer of `sscanf` has an *interop type*:
 
 ```c
 int sscanf(const char * restrict s : itype(restrict _Nt_array_ptr<const char>),
            const char * restrict format : itype(restrict _Nt_array_ptr<const char>), ...);
 ```
 
-This is because `sscanf` stops reading at a null byte, so we can safely pass any `_Nt_array_ptr<const char>` and `sscanf` will not read out of bounds. Because of the itype, 3C could make the `str` parameter fully checked. But while we could safely pass `str` itself to `sscanf`, the same is not true of `&str[i]`: unless we know something more about `str` or `i`, `&str[i]` might be beyond the null terminator of `str` and `sscanf` might read out of bounds. The intent is clearly that `bignum_from_string` should be called with `nbytes` equal to the length of `str`, but this is not enforced since the declaration of `str` does not specify a `count`. So while the `bignum_from_string` implementation is in fact safe with respect to its _intended_ API (unlike the original `bignum_to_string`), we don't have the protection against incorrect calls that we would expect in Checked C.
+To a first approximation, the interop type states that callers can treat `s` and `format` as either an unchecked `const char *` or a checked `_Nt_array_ptr<const char>` without an explicit cast. Interop types (often abbreviated "itypes") provide valuable flexibility: we gain the ability to treat `s` as an `_Nt_array_ptr<char>` without having to immediately add casts to all code that treats it as a `char *`.
 
-To fix this, first we have to change the declaration of `str` to `_Nt_array_ptr<char> str : count(nbytes)` to express the assumption about its length. If we stop here, we still get a compile error (the same as above). Why? While the compiler now knows that `str` is `nbytes` long, it is unable to guess the loop invariant `0 <= i <= nbytes - (2 * WORD_SIZE)` that is needed to prove that `&str[i]` is in bounds. We help the compiler out using a `_Dynamic_bounds_cast`. Such a cast is an assertion about a pointer's bounds that the compiler can assume to be true from here on, based on a check it will insert at run-time. We replace the `sscanf` call with the following:
+This particular itype makes sense for `sscanf` because it stops reading `s` at a null byte: we can safely pass any `_Nt_array_ptr<const char>` and `sscanf` will not read out of bounds. But while `bignum_from_string` could safely pass `str` itself to `sscanf`, the same is not necessarily true of `&str[i]`: unless we know something more about `str` or `i`, `&str[i]` might be beyond the null terminator of `str` and `sscanf` might read out of bounds. Unfortunately, while the compiler knows that `str` is `nbytes` long (since the declaration of `str` to `_Nt_array_ptr<char> str : count(nbytes)`), it is unable to guess the loop invariant `0 <= i <= nbytes - (2 * WORD_SIZE)` that is needed to prove that `&str[i]` is in bounds. We help the compiler out using a `_Dynamic_bounds_cast`. Such a cast is an assertion about a pointer's bounds that the compiler can assume to be true from here on, based on a check it will insert at run-time. We replace the `sscanf` call with the following:
 
 ```c
     _Nt_array_ptr<char> read_pos =
@@ -180,9 +141,9 @@ void bignum_from_string_using_strlen(_Ptr<struct bn> n, _Nt_array_ptr<char> str)
 }
 ```
 
-Here the `_Assume_bounds_cast` is telling the compiler to simply _assume_ that `str2` (an alias for `str`) is at least as long as `count(len)`. This is not a crazy assumption: This is what `strlen` is supposed to do! The Checked C compiler should soon be able to verify this. 
+Here the `_Assume_bounds_cast` is telling the compiler to simply _assume_ that `str2` (an alias for `str`) is at least as long as `count(len)`. This is not a crazy assumption: This is what `strlen` is supposed to do! (The Checked C compiler should be able to verify this; it is a feature in progress.)
 
-Now the code compiles without warnings. You can run the tests by typing `make test`. We <a href="https://github.com/correctcomputation/checkedc-tiny-bignum-c/commit/88fcaca0142a5ec622d49610b6f55974b38049c9" data-commit-subject="migrate bignum_from_string">commit these changes</a> with the message "manual commit: migrate bignum_from_string".
+Now the code compiles without warnings. You can run the tests by typing `make test`. We <a href="https://github.com/secure-sw-dev/checkedc-tiny-bignum-c/commit/d568a2c807cfb949fe6af9d1edcde8697d890a44" data-commit-subject="migrate bignum_from_string">commit these changes</a> with the message "manual commit: migrate bignum_from_string".
 
 <details>
   <summary>What if I don't want to assume <tt>strlen</tt>'s connection to its parameter's bounds?</summary>
@@ -206,9 +167,50 @@ Each time we check that `str2[i]` is not the terminator, we're allowed to increa
 While it's nice to know how to verify the length of an `_Nt_array_ptr` at runtime in Checked C, in the real world, we might prefer to use the first implementation of `bignum_from_string_using_strlen` with the unchecked region and accept responsibility for reviewing it manually (it's very simple) in exchange for using the C library's much better-optimized `strlen` implementation.
 </details>
 
+## Fixing `bignum_to_string` buffer lengths
+
+While the code compiles and runs, not every pointer is yet checked. Looking at `bn.h` and `bn.c`, we notice the type of `str` in this function prototype is an itype:
+
+```c
+void bignum_to_string(_Ptr<struct bn> n, char *str : itype(_Array_ptr<char>) count(8191), int maxsize);
+```
+
+Why? It turns out that `str` is used unsafely in the body of `bignum_to_string`, so 3C automatically assigned it an itype so the body of `bignum_to_string` will continue to compile but 3C can go ahead and start updating calls to `bignum_to_string` to pass checked pointers. In this way, 3C localizes unsafe behavior in order to convert as much of the code as possible in each pass.
+
+We'll see later why 3C believes `str` is used unsafely inside `bignum_to_string`. For now, let's consider the bounds 3C has given it: `count(8191)`. It turns out that every caller in this code is always passing in a buffer of that size, so 3C was not wrong. But we can also see from looking at the code that the programmer's intention is that `maxsize` indicates the size of `str`. If we change `8191` to `maxsize` and then try to compile again, we now start to see some errors like this:
+
+```
+./tests/golden.c:260:29: error: argument does not meet declared bounds for 2nd parameter
+      bignum_to_string(&sa, buf, sizeof(buf));
+                            ^~~
+./tests/golden.c:260:29: note: destination bounds are wider than the source bounds
+./tests/golden.c:260:29: note: destination upper bound is above source upper bound
+./tests/golden.c:260:29: note: (expanded) expected argument bounds are 'bounds((char *)buf, (char *)buf + (int)sizeof (buf))'
+./tests/golden.c:260:29: note: (expanded) inferred bounds are 'bounds(buf, buf + 8191)'
+      bignum_to_string(&sa, buf, sizeof(buf));
+                            ^~~
+```
+
+Let's look closer at the code flagged in the first error:
+
+```c
+char buf _Nt_checked[8192];
+// ...
+bignum_to_string(&sa, buf, sizeof(buf));
+printf("    a = %s \n", buf);
+```
+
+The reason that this is problematic is that `buf` has been inferred to be a _null-terminated_ array (`_Nt_checked`), which follows special rules in Checked C. (`buf` has to be null-terminated because it is passed to `printf`, which requires a null-terminated string.) In Checked C, an `_Nt_array_ptr : count(n)` points to an array of at least `n` elements _not counting_ the null terminator. This makes it safe to convert an `_Nt_array_ptr : count(n)` to an `_Array_ptr : count(n)`, because the `_Array_ptr` cannot be used to overwrite the null terminator. (If the `_Nt_array_ptr` count included the null terminator, then conversion to an `_Array_ptr` would have to subtract 1 from the count, which would be ugly.) However, this means that when an `_Nt_checked` array is declared, Checked C automatically reserves the last element for the null terminator, and the corresponding `_Nt_array_ptr` count is one less than the original array size. In our example, `buf` becomes an `_Nt_array_ptr<char> : count(8191)`. This is not convertible to the `_Array_ptr<char> : count(8192)` that we get when we instantiate the declared type of the `str` parameter with the specified `maxsize = sizeof(buf) = 8192`, hence the compile error.
+
+To find the correct way to fix the error, first we need to confirm what the API of `bignum_to_string` actually is: does the `maxsize` parameter include the null terminator or not? Either design is valid as long as it is used consistently. Clearly, the call sites assume that `maxsize` includes the null terminator. If this were the API, we would just change the declaration of `str` to say `count(maxsize-1)`, and the errors at the call sites would go away. But examination of the implementation of `bignum_to_string` suggests that it assumes that `maxsize` (a.k.a. `nbytes`) _excludes_ the null terminator: `bignum_to_string` asserts that `nbytes` is even on the grounds that converting a whole number of bytes to hexadecimal should produce an even number of characters, which only makes sense if `nbytes` is the number of characters excluding the null terminator. So **Checked C porting has called our attention to an inconsistency in the original C code that presents a potential spatial memory safety violation.** If the caller passes an 8192-byte buffer (8191 bytes plus a null terminator) but `bignum_to_string` thinks the buffer has space for 8192 bytes plus a null terminator, `bignum_to_string` might write the null terminator out of bounds or might just write 8192 non-null bytes, causing the subsequent `printf` to read out of bounds.
+
+To resolve the API inconsistency, we can either change the call sites so that `maxsize` excludes the null terminator or change the implementation so that `maxsize` includes it. Again, either approach would lead to a working program; in general, the decision may depend on the difficulty of updating the call sites as compared to the implementation. In this case, a quick look at both the implementation and callers of `bignum_from_string` indicates that its `nbytes` parameter excludes the null terminator, so we decide to make `bignum_to_string` consistent with `bignum_from_string` by changing the call sites so that `maxsize` excludes the null terminator. This is a matter of replacing `sizeof(buf)` with `sizeof(buf)-1` (or whatever the variable is named) at all the call sites. But since `bignum_to_string` requires `maxsize` to be even, we also have to add 1 to the size of `buf` so that `sizeof(buf)-1` will be even.
+
+We <a href="https://github.com/secure-sw-dev/checkedc-tiny-bignum-c/commit/78509e353ad634bbb9c224cff1e7136a6bbfd7de" data-commit-subject="fix bignum_to_string buffer lengths">commit these changes</a> with the message "manual commit: fix bignum_to_string buffer lengths". With this change, the code should compile and run properly (again).
+
 ## Fixing `bignum_to_string` using `snprintf`
 
-We said earlier that 3C gave the `str` parameter of `bignum_to_string` an interop type (itype) because `str` was used unsafely inside the function. What exactly is the unsafe use? The easiest way to find out is to manually change the type to be fully checked rather than an itype:
+We said above that 3C gave the `str` parameter of `bignum_to_string` an interop type (itype) because `str` was used unsafely inside the function. What exactly is the unsafe use? The easiest way to find out is to manually change the type to be fully checked rather than an itype:
 
 ```c
 void bignum_to_string(_Ptr<struct bn> n, _Array_ptr<char> str : count(nbytes), int nbytes)
@@ -296,11 +298,11 @@ Now the code once again compiles without warnings and passes the tests.
 Another valid approach would have been to use `2 * WORD_SIZE + 1` rather than `nbytes - i + 1` as the size argument to `snprintf` to make it clearer when looking at the `snprintf` call in isolation that truncation cannot occur. Ideally, the Checked C compiler would still be able to verify that `snprintf(str + i, 2 * WORD_SIZE + 1, ...)` is safe because of the loop condition that `nbytes >= i + 2 * WORD_SIZE`. However, the compiler currently doesn't support this kind of reasoning, so we'd have to use a `_Dynamic_bounds_cast` like the one above anyway. If we want to detect truncation, yet another approach would be to use a wrapper function for `snprintf` that raises an assertion error on truncation.
 </details>
 
-At this point the code compiles again, and the tests work properly. We <a href="https://github.com/correctcomputation/checkedc-tiny-bignum-c/commit/157871636d94df7ddac166c4585f4d3c1be95227" data-commit-subject="migrate bignum_to_string to snprintf">commit these changes</a> with the message "manual commit: migrate bignum_to_string to snprintf".
+At this point the code compiles again, and the tests work properly. We <a href="https://github.com/secure-sw-dev/checkedc-tiny-bignum-c/commit/82c56f6a6a5e63da3e36fdd7881e3d726d4fd413" data-commit-subject="migrate bignum_to_string to snprintf">commit these changes</a> with the message "manual commit: migrate bignum_to_string to snprintf".
 
 ## Putting all the code in a checked region
 
-We've seen that by default, Checked C lets us mix checked and unchecked operations, but its safety guarantee applies only to checked operations. Ultimately, we'd like to place as much of the code as possible in checked regions to make it easier to see what (if any) unchecked operations remain whose safety we have to reason about manually. We can do this by adding `#pragma CHECKED_SCOPE on` at the beginning of each `.c` file, which places all subsequent code in a checked region.
+We've seen that by default, Checked C lets us mix checked and unchecked operations, but its safety guarantee applies only to code in designated *checked regions*. Ultimately, we'd like to place as much of the code as possible in checked regions to make it easier to see what (if any) unchecked operations remain whose safety we have to reason about manually. We can do this by adding `#pragma CHECKED_SCOPE on` at the beginning of each `.c` file, which places all subsequent code in a checked region.
 
 Adding `#pragma CHECKED_SCOPE on` to the beginning of a file forces all code within it, including code from expanded `#include`s, to be considered in a checked regiond. This isn't a problem for us because we're applying it to the entire program at once and all the external headers we use (such as `stdio.h`) are compatible with `#pragma CHECKED_SCOPE on`. In a header file, it's good practice to localize the designation of a checked region to that file, thus:
 
@@ -311,37 +313,11 @@ Adding `#pragma CHECKED_SCOPE on` to the beginning of a file forces all code wit
 #pragma CHECKED_SCOPE pop
 ```
 
-We apply the above pattern to `bn.h`, and just add `#pragma CHECKED_SCOPE on` to the top of `bn.c`. Recompiling, we get this error:
-
-```
-bn.c:119:5: error: cannot use a variable arguments function in a checked scope or function
-    sscanf(read_pos, SSCANF_FORMAT_STR, &tmp);
-    ^
-bn.c:140:5: error: cannot use a variable arguments function in a checked scope or function
-    snprintf(&str[i], nbytes - i + 1, SPRINTF_FORMAT_STR, n->array[j]);
-    ^
-```
-
-In general, there's no way for the declaration of a variable-arguments function to even specify what assumptions the function makes about the types of the variable arguments passed to it, so it isn't safe to allow calls to such a function in checked regions. In practice, this is a major nuisance for `printf` and similar functions. However, for `printf`-like functions in particular, many C compilers have special support for parsing format strings and validating the corresponding argument types. There are [plans](https://github.com/microsoft/checkedc-clang/issues/1160) to extend this validation for Checked C so that calls to `printf`-like functions that pass validation can be safely allowed in checked regions. In the meantime, the best we can do is wrap every call to a `printf`-like function in an unchecked region, like this:
-
-```c
-  _Unchecked { sscanf(read_pos, SSCANF_FORMAT_STR, &tmp); }
-```
-(and likewise for `snprintf`.) Doing so, these functions now compile. Adding `#pragma CHECKED_SCOPE on` to the `.c` files in `tests` will lead to similar errors, which we could fix in the same way. E.g., each call to `printf` we could replace with `_Unchecked { printf ... }`. However, this adds a lot of clutter to the code. To ameliorate this problem, we define `printf` as a preprocessor macro that automatically generates an unchecked block around the real `printf` call so that existing calls don't need to be changed:
-
-```c
-#define printf(...) _Unchecked { printf(__VA_ARGS__); }
-```
-
-Of course, what we gain in reduced clutter, we lose in ability to easily see where the potentially unsafe operations are.
-
-Now the code _almost_ compiles: the compiler is now complaining about the `_Assume_bounds_cast` we added in `bignum_from_string_using_strlen`. We added this problem similarly: We add a `_Unchecked` annotation on the function body. With this, the code compiles and passes the tests again, _and_ we're guaranteed that the entire program is spatially memory safe except for the `_Unchecked` blocks (modulo bugs and limitations of the Checked C compiler). We <a href="https://github.com/correctcomputation/checkedc-tiny-bignum-c/commit/b44cad8bf3ef7a4a6b752b675c0c0f27cee471cd" data-commit-subject="put everything in a checked scope except printf, etc.">commit these changes</a> with the message "manual commit: put everything in a checked scope except printf, etc.".
+We apply the above pattern to `bn.h`, and just add `#pragma CHECKED_SCOPE on` to the top of `bn.c` and the files in `tests`. Having done so, the code _almost_ compiles: the compiler is now complaining about the `_Assume_bounds_cast` we added in `bignum_from_string_using_strlen`. We can address this problem by putting the function in an *unchecked* region by annotating it with `_Unchecked` (or we can modify it to use `_Dynamic_bounds_cast` instead, as described above). With this, the code compiles and passes the tests again, _and_ we're guaranteed that the entire program is spatially memory safe except for the `_Unchecked` blocks (modulo bugs and limitations of the Checked C compiler). We <a href="https://github.com/secure-sw-dev/checkedc-tiny-bignum-c/commit/d097bb43a7b4b8488eb888ea355a63db1a63da97" data-commit-subject="put everything in a checked scope.">commit these changes</a> with the message "manual commit: put everything in a checked scope".
 
 ## Final thoughts
 
 Thus concludes our Checked C port of `tiny-bignum-c`; future versions of the compiler should make some steps a little better, but overall that wasn't too bad. We even found two spatial memory safety bugs in the original code in the process.
 
 Good luck porting your own programs! We hope you find that 3C and Checked C provide a good degree of assurance of spatial memory safety in relation to the porting work you put in, compared to more ambitious approaches such as porting to a language like Rust. We've pursued this tutorial to the bitter end in order to illustrate as many issues as possible, but in a real port, you can choose to stop when you believe that additional reworking of unchecked code is not justified by the stronger assurance you get for that code.
-
-
 
