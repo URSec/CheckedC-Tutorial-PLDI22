@@ -1,10 +1,10 @@
-all: sample checked
+all: ll checked_ll
 
-sample: sample.c
-	$(CC) sample.c -o s1
+ll: linkedlist.c
+	$(CC) $^ -O3 -o linkedlist
 
-checked: checked.c
-	$(CC) checked.c -o c1
+checked_ll: checked_ll.c
+	$(CC) $^ -O3 -o checked_ll
 
 clean:
-	rm s1 c1
+	rm -f linkedlist checked_ll
