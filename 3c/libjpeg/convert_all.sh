@@ -1,1 +1,0 @@
-3c -alltypes -warn-root-cause -output-dir=out ./to_ppm.c --
