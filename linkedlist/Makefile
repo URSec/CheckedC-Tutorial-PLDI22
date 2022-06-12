@@ -1,6 +1,6 @@
-all: ll checked_ll
+all: linkedlist checked_ll
 
-ll: linkedlist.c
+linkedlist: linkedlist.c
 	$(CC) $^ -O3 -o linkedlist
 
 checked_ll: checked_ll.c

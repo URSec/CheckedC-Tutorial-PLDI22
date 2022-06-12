@@ -5,6 +5,8 @@ c1
 c2
 tiny-bignum/build/*
 sum2array/sum2array*
+linkedlist
+checked_ll
 
 *.core
 vgcore.*

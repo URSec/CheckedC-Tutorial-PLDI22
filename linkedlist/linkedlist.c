@@ -16,7 +16,11 @@
  *   #define array_ptr _Array_ptr
  *   #define checked _Checked
  *
- * 2. The bounds-safe interfaces for malloc and free are defined as follows:
+ * 2. How to declare the bounds for an array pointer:
+ *    1. array_ptr<T> p : count(bounds_expr) = ...;
+ *    2. array_ptr<T> p : bounds(lower_b, upper_b) = ...
+ *
+ * 3. The bounds-safe interfaces for malloc and free are defined as follows:
  *
  *    _Itype_for_any(T) void* malloc(size_t len) : itype(_Array_ptr<T>) byte_count(len);
  *    _Itype_for_any(T) void free(void* p : itype(_Ptr<T>));
@@ -24,7 +28,7 @@
  *    They take a type parameter; so you need provide a type paramter when
  *    calling them, e.g., "... = malloc<int>(...);".
  * 
- * 3. Variadic functions such as printf are inherently unsafe and thus cannot
+ * 4. Variadic functions such as printf are inherently unsafe and thus cannot
  *    be used in checked regions.
  * */
 
