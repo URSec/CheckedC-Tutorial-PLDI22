@@ -1,13 +1,15 @@
-MACROS := 
+MACROS :=
 CFLAGS := -I. -Wundef -Wall -Wextra -O3 $(MACROS)
 
+factorial:
+	$(CC) $(CFLAGS) bn.c ./tests/factorial.c   -o ./build/test_factorial
 
 all:
-	@$(CC) $(CFLAGS) bn.c ./tests/golden.c      -o ./build/test_golden
-	@$(CC) $(CFLAGS) bn.c ./tests/hand_picked.c -o ./build/test_hand_picked
-	@$(CC) $(CFLAGS) bn.c ./tests/load_cmp.c    -o ./build/test_load_cmp
-	@$(CC) $(CFLAGS) bn.c ./tests/factorial.c   -o ./build/test_factorial
-	@$(CC) $(CFLAGS) bn.c ./tests/randomized.c  -o ./build/test_random
+	$(CC) $(CFLAGS) bn.c ./tests/golden.c      -o ./build/test_golden
+	$(CC) $(CFLAGS) bn.c ./tests/hand_picked.c -o ./build/test_hand_picked
+	$(CC) $(CFLAGS) bn.c ./tests/load_cmp.c    -o ./build/test_load_cmp
+	$(CC) $(CFLAGS) bn.c ./tests/factorial.c   -o ./build/test_factorial
+	$(CC) $(CFLAGS) bn.c ./tests/randomized.c  -o ./build/test_random
 	@#$(CC) $(CFLAGS) bn.c ./tests/rsa.c         -o ./build/test_rsa
 
 
