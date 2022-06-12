@@ -3,7 +3,7 @@
 Please `git clone` this repo to you OS. It contains the script to install and
 run our docker image, and also the sample code used to in this tutorial.
 
-##  (Optional) Install Docker and Docker Compose
+##  Install Docker and Docker Compose
 
 ### For all OS
 Download and install Docker from [https://docs.docker.com/engine/install/](https://docs.docker.com/engine/install/).
@@ -27,7 +27,7 @@ the docker image the first time you run it, and launches a container.
 ```
 
 ### Windows
-For Windows Users, double click `run.bat` to launch the shell.
+For Windows users, double click `run.bat` to launch the shell.
 
 
 ## Using the Container
